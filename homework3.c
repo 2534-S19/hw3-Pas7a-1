@@ -3,8 +3,11 @@
 #include "myGPIO.h"
 #include "myTimer.h"
 
+
 int main(void)
+
 {
+
     // Count variables to control the LEDs.
     unsigned int count0 = 0;
     unsigned int count1 = 0;
@@ -19,13 +22,16 @@ int main(void)
     initGPIO();
     // Initialize Timer0 to provide a one second count interval for updating LED2.
     // YOU MUST WRITE THIS FUNCTION IN myTimer.c
-    initTimer(TIMER32_0_BASE, TIMER0_PRESCALER, TIMER0_COUNT);
+    initTimer(TIMER0, TIMER0_PRESCALER, TIMER0_COUNT);
     // Initialize Timer1 to provide a one millisecond count interval for updating the button history.
     // YOU MUST WRITE THIS FUNCTION IN myTimer.c
-    initTimer(TIMER32_1_BASE, TIMER1_PRESCALER, TIMER1_COUNT);
+    //initTimer(TIMER32_1_BASE, TIMER1_PRESCALER, TIMER1_COUNT);
+
+    turnOff_All();
 
     while(1)
     {
+
         // Update the color of LED2 using count0 as the index.
         // YOU MUST WRITE THIS FUNCTION BELOW.
         changeLaunchpadLED2(count0);
@@ -35,8 +41,17 @@ int main(void)
 
         // TODO: If Timer0 has expired, increment count0.
         // YOU MUST WRITE timer0expired IN myTimer.c
+        //unsigned int currentSnap;
+       // currentSnap = Timer32_getValue(TIMER0);
 
-
+        if(timer0Expired()){
+            if (count0 == 7){
+                count0 = 0;
+            }
+            else{
+               count0++;
+            }
+        }
 
         // TODO: If Timer1 has expired, update the button history from the pushbutton value.
         // YOU MUST WRITE timer1expired IN myTimer.c
@@ -62,8 +77,43 @@ void initBoard()
 
 // TODO: Map the value of a count variable to a color for LED2.
 // Since count is an unsigned integer, you can mask the value in some way.
+
 void changeLaunchpadLED2(unsigned int count)
 {
+    if (count == 0){
+    turnOff_All();
+
+    }
+    else if (count == 1){
+    turnOn_LaunchpadLED2Red();
+
+    }
+    else if (count ==2){
+        turnOff_LaunchpadLED2Red();
+        turnOn_LaunchpadLED2Green();
+    }
+    else if (count == 3){
+        turnOn_LaunchpadLED2Red();
+    }
+    else if (count == 4){
+       turnOff_LaunchpadLED2Red();
+       turnOff_LaunchpadLED2Green();
+       turnOn_LaunchpadLED2Blue();
+   }
+    else if (count == 5){
+       turnOn_LaunchpadLED2Red();
+
+   }
+    else if (count == 6){
+       turnOff_LaunchpadLED2Red();
+       turnOn_LaunchpadLED2Green();
+
+   }
+    else if (count == 7){
+       turnOn_LaunchpadLED2Red();
+    }
+
+
 
 }
 
