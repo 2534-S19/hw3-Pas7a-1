@@ -4,6 +4,10 @@
 #include "myTimer.h"
 
 
+typedef enum {Sup, Sdown} button_state_t;
+
+
+
 int main(void)
 
 {
@@ -13,6 +17,9 @@ int main(void)
     unsigned int count1 = 0;
 
     // TODO: Declare the variables that main uses to interact with your state machine.
+
+
+
 
 
     // Stops the Watchdog timer.
@@ -25,7 +32,7 @@ int main(void)
     initTimer(TIMER0, TIMER0_PRESCALER, TIMER0_COUNT);
     // Initialize Timer1 to provide a one millisecond count interval for updating the button history.
     // YOU MUST WRITE THIS FUNCTION IN myTimer.c
-    //initTimer(TIMER32_1_BASE, TIMER1_PRESCALER, TIMER1_COUNT);
+    initTimer(TIMER32_1_BASE, TIMER1_PRESCALER, TIMER1_COUNT);
 
     turnOff_All();
 
@@ -41,34 +48,52 @@ int main(void)
 
         // TODO: If Timer0 has expired, increment count0.
         // YOU MUST WRITE timer0expired IN myTimer.c
-        //unsigned int currentSnap;
-       // currentSnap = Timer32_getValue(TIMER0);
+
 
         if(timer0Expired()){
-            if (count0 == 7){
+
+
+            if (count0 == 7)
                 count0 = 0;
-            }
-            else{
+            else
                count0++;
-            }
+
         }
 
         // TODO: If Timer1 has expired, update the button history from the pushbutton value.
         // YOU MUST WRITE timer1expired IN myTimer.c
 
+        if(timer1Expired()){
+
+          unsigned char NewButtonValue = checkStatus_BoosterpackS1();
+          static unsigned char pressHistory = UNPRESSED;
 
 
+
+          pressHistory <<= 1;
+          pressHistory |= NewButtonValue;
+          bool isPressed = fsmBoosterpackButtonS1(pressHistory);
+
+          if(isPressed){
+              if (count1 == 7)
+                  count1 = 0;
+           else
+             count1++;
+          }
+
+        }
         // TODO: Call the button state machine function to check for a completed, debounced button press.
         // YOU MUST WRITE THIS FUNCTION BELOW.
 
 
 
         // TODO: If a completed, debounced button press has occurred, increment count1.
-
-
-
     }
 }
+
+
+
+
 
 void initBoard()
 {
@@ -81,7 +106,7 @@ void initBoard()
 void changeLaunchpadLED2(unsigned int count)
 {
     if (count == 0){
-    turnOff_All();
+    turnOff_All_LED2();
 
     }
     else if (count == 1){
@@ -122,13 +147,63 @@ void changeLaunchpadLED2(unsigned int count)
 void changeBoosterpackLED(unsigned int count)
 {
 
+     if (count == 0){
+        turnOff_All_BLED();
+
+        }
+    else if (count == 1){
+        turnOn_BoosterPackLEDRed();
+
+        }
+    else if (count ==2){
+            turnOff_BoosterPackLEDRed();
+            turnOn_BoosterPackLEDGreen();
+        }
+    else if (count == 3){
+            turnOn_BoosterPackLEDRed();
+        }
+    else if (count == 4){
+           turnOff_BoosterPackLEDRed();
+           turnOff_BoosterPackLEDGreen();
+           turnOn_BoosterPackLEDBlue();
+       }
+    else if (count == 5){
+           turnOn_BoosterPackLEDRed();
+
+       }
+    else if (count == 6){
+           turnOff_BoosterPackLEDRed();
+           turnOn_BoosterPackLEDGreen();
+
+       }
+    else if (count == 7){
+           turnOn_BoosterPackLEDRed();
+        }
+
 }
 
 // TODO: Create a button state machine.
 // The button state machine should return true or false to indicate a completed, debounced button press.
-bool fsmBoosterpackButtonS1(unsigned int buttonhistory)
+bool fsmBoosterpackButtonS1(unsigned char buttonhistory)
 {
+    static button_state_t currentState = Sup;
     bool pressed = false;
+
+    switch (currentState){
+
+    case Sup:
+        if (buttonhistory == PRESSED)
+            currentState = Sdown;
+        break;
+
+    case Sdown:
+        if (buttonhistory == UNPRESSED){
+            currentState = Sup;
+            pressed = true;
+            }
+        break;
+
+    }
 
 
     return pressed;
